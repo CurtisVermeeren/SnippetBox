@@ -2,20 +2,15 @@ package main
 
 import (
 	"fmt"
-	"html/template"
 	"net/http"
 	"strconv"
 
+	"github.com/curtisvermeeren/snippetbox/pkg/forms"
 	"github.com/curtisvermeeren/snippetbox/pkg/models"
 )
 
-// Handle home route
+// Show the homepage
 func (app *application) home(w http.ResponseWriter, r *http.Request) {
-
-	if r.URL.Path != "/" {
-		app.notFound(w)
-		return
-	}
 
 	s, err := app.snippets.Latest()
 	if err != nil {
@@ -23,37 +18,15 @@ func (app *application) home(w http.ResponseWriter, r *http.Request) {
 		return
 	}
 
-	for _, snippet := range s {
-		fmt.Fprintf(w, "%v\n\n", snippet)
-	}
-
-	/*
-		files := []string{
-			"../../ui/html/home.page.tmpl",
-			"../../ui/html/base.layout.tmpl",
-			"../../ui/html/footer.partial.tmpl",
-		}
-
-		ts, err := template.ParseFiles(files...)
-
-		if err != nil {
-			app.serverError(w, err)
-			http.Error(w, "Internal Server Error", 500)
-			return
-		}
-
-		err = ts.Execute(w, nil)
-		if err != nil {
-			app.serverError(w, err)
-			http.Error(w, "Internal Server Error", 500)
-		}
-	*/
+	app.render(w, r, "home.page.tmpl", &templateData{
+		Snippets: s,
+	})
 }
 
-// Show a snippet
+// Show a snippet by querying an id from the URL
 func (app *application) showSnippet(w http.ResponseWriter, r *http.Request) {
 
-	id, err := strconv.Atoi(r.URL.Query().Get("id"))
+	id, err := strconv.Atoi(r.URL.Query().Get(":id"))
 	if err != nil || id < 1 {
 		app.notFound(w)
 		return
@@ -68,43 +41,41 @@ func (app *application) showSnippet(w http.ResponseWriter, r *http.Request) {
 		return
 	}
 
-	data := &templateData{Snippet: s}
+	app.render(w, r, "show.page.tmpl", &templateData{
+		Snippet: s,
+	})
+}
 
-	files := []string{
-		"../../ui/html/show.page.tmpl",
-		"../../ui/html/base.layout.tmpl",
-		"../../ui/html/footer.partial.tmpl",
-	}
-
-	ts, err := template.ParseFiles(files...)
-	if err != nil {
-		app.serverError(w, err)
-		return
-	}
-
-	err = ts.Execute(w, data)
-	if err != nil {
-		app.serverError(w, err)
-	}
+// Shows the form for creating a new snippet
+func (app *application) createSnippetForm(w http.ResponseWriter, r *http.Request) {
+	app.render(w, r, "create.page.tmpl", &templateData{
+		Form: forms.New(nil),
+	})
 }
 
 // Create a new snippet
 func (app *application) createSnippet(w http.ResponseWriter, r *http.Request) {
-
-	if r.Method != "POST" {
-		w.Header().Set("Allow", "POST")
-		app.clientError(w, http.StatusMethodNotAllowed)
+	err := r.ParseForm()
+	if err != nil {
+		app.clientError(w, http.StatusBadRequest)
 		return
 	}
 
-	title := "O snail"
-	content := "O snail\n Climb the mountain\n but slowly, slowly\n\n - Snail"
-	expires := "7"
+	form := forms.New(r.PostForm)
+	form.Required("title", "content", "expires")
+	form.MaxLength("title", 100)
+	form.PermittedValues("expires", "365", "7", "1")
 
-	id, err := app.snippets.Insert(title, content, expires)
-	if err != nil {
-		app.serverError(w, err)
+	if !form.Valid() {
+		app.render(w, r, "create.page.tmpl", &templateData{Form: form})
+		return
 	}
 
-	http.Redirect(w, r, fmt.Sprintf("/snippet?id=%d", id), http.StatusSeeOther)
+	id, err := app.snippets.Insert(form.Get("title"), form.Get("content"), form.Get("expires"))
+	if err != nil {
+		app.serverError(w, err)
+		return
+	}
+
+	http.Redirect(w, r, fmt.Sprintf("/snippet/%d", id), http.StatusSeeOther)
 }
