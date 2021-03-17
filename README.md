@@ -10,6 +10,8 @@ Run using the `go run .` command from the cmd/web directory.
 
 `-dsn=` can be used to specifiy a MySql connection string. 
 
+`-secret=` can be used to specifiy a secret token used for creating sessions
+
 ## Database
 
 Database is provided using MySQL
@@ -20,4 +22,8 @@ For development a default MySQL user is created in the schema with username of `
 
 ## config.env
 
-This file contains setup for the project
+This file contains setup for the project.
+
+DB_CONNECTION is the connection string for your MySQL database.
+
+SESSION_SECRET is a 32 Byte string for creating sessions.
