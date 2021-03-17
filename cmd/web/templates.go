@@ -12,6 +12,7 @@ import (
 // templateData acts as a holding structure for dta passsed to HTML templates.
 type templateData struct {
 	CurrentYear int
+	Flash       string
 	Form        *forms.Form
 	Snippet     *models.Snippet
 	Snippets    []*models.Snippet
