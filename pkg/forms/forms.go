@@ -3,9 +3,14 @@ package forms
 import (
 	"fmt"
 	"net/url"
+	"regexp"
 	"strings"
 	"unicode/utf8"
 )
+
+// Regular expression to check for an email
+// Compiled once at runtime for performance
+var EmailRX = regexp.MustCompile("^[a-zA-Z0-9.!#$%&'*+/=?^_`{|}~-]+@[a-zA-Z0-9](?:[a-zA-Z0-9-]{0,61}[a-zA-Z0-9])?(?:\\.[a-zA-Z0-9](?:[a-zA-Z0-9-]{0,61}[a-zA-Z0-9])?)*$")
 
 // The Form struct hold the form data in url.Values and and validation errors
 type Form struct {
@@ -42,6 +47,17 @@ func (f *Form) MaxLength(field string, d int) {
 	}
 }
 
+// Check that a field fits within the minimum length needed
+func (f *Form) MinLength(field string, d int) {
+	value := f.Get(field)
+	if value == "" {
+		return
+	}
+	if utf8.RuneCountInString(value) < d {
+		f.Errors.Add(field, fmt.Sprintf("This field is too short (minimum is %d characters)", d))
+	}
+}
+
 // Check that a field contains petmitted values
 func (f *Form) PermittedValues(field string, opts ...string) {
 	value := f.Get(field)
@@ -61,4 +77,15 @@ func (f *Form) PermittedValues(field string, opts ...string) {
 // Valid returns true if there are no errors in the form
 func (f *Form) Valid() bool {
 	return len(f.Errors) == 0
+}
+
+// MatchesPattern checks if a provided string matches a provided pattern
+func (f *Form) MatchesPattern(field string, pattern *regexp.Regexp) {
+	value := f.Get(field)
+	if value == "" {
+		return
+	}
+	if !pattern.MatchString(value) {
+		f.Errors.Add(field, "This field is invalid")
+	}
 }
