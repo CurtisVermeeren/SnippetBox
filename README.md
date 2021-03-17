@@ -27,3 +27,9 @@ This file contains setup for the project.
 DB_CONNECTION is the connection string for your MySQL database.
 
 SESSION_SECRET is a 32 Byte string for creating sessions.
+
+## Generating a self-signed TLS certificate
+
+You can generate a self-signed TSL certificate for development using GO itself. 
+
+On Windows from the tls directory of the project run `go run PATHTOGOSOURCE\src\crypto\tls\generate_cert.go --rsa-bits=2048 --host=localhost` replacing the path to the generate_cert.go file with your own systems path to the Go source.
