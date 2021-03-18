@@ -11,7 +11,7 @@ import (
 
 // templateData acts as a holding structure for dta passsed to HTML templates.
 type templateData struct {
-	AuthenticatedUser int
+	AuthenticatedUser *models.User
 	CSRFToken         string
 	CurrentYear       int
 	Flash             string

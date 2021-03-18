@@ -16,6 +16,11 @@ import (
 	"github.com/joho/godotenv"
 )
 
+// Create own custom type for using Request contexts
+type contextKey string
+
+var contextKeyUser = contextKey("user")
+
 // application structure holds application-wide dependencies
 // the application object can inject dependencies in a neater manner than a global variable
 type application struct {
