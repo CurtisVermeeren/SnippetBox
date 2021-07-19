@@ -40,7 +40,7 @@ For development a default MySQL user is created in the schema with username of `
 ## Generating a self-signed TLS certificate
 You can generate a self-signed TSL certificate for development using GO itself. 
 
-Create a `tls` folderin the root of the project.
+Create a `tls` folder in the root of the project.
 
 On Windows from the `tls` directory of the project run `go run PATHTOGOSOURCE\src\crypto\tls\generate_cert.go --rsa-bits=2048 --host=localhost` replacing the path to the generate_cert.go file with your own systems path to the Go source.
 
