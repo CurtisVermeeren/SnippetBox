@@ -11,6 +11,8 @@ See the `Generating a self-signed TLS certificate` section below for setting up 
 ## Running the project
 Run using the `go run .` command from the cmd/web directory.
 
+You can then view snippets, Register an account, or Login with an existing account on the DB.
+
 ## Parameters
 
 `-addr=` can be used to change the port of the application. Example `go run . -addr=":8080"`
